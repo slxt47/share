@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#efe3f8" media="(prefers-color-scheme: light)" data-fuer="hell">
+  <meta name="theme-color" content="#0b0e2a" media="(prefers-color-scheme: dark)" data-fuer="dunkel">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="slxt share">
+  <meta name="description" content="Dateien Ende-zu-Ende verschlüsselt teilen – per Link oder QR-Code.">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <title>Meine Dateien – slxt share</title>
+  <script type="module" src="/src/app.js"></script>
+</head>
+<body>
+  <div class="sky" aria-hidden="true"><i></i><i></i><canvas></canvas><div class="meteors"></div></div>
+  <header class="bar">
+    <a class="marke" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="sh-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6d4aff"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#sh-g)"/><rect x="14" y="40" width="36" height="6" rx="3" fill="#fff"/><rect x="14" y="31" width="6" height="15" rx="3" fill="#fff"/><rect x="44" y="31" width="6" height="15" rx="3" fill="#fff"/><rect x="29" y="20" width="6" height="17" rx="2" fill="#fff"/><rect x="43" y="12.5" width="4.6" height="4.6" rx="1.3" fill="#fff" fill-opacity="0.75"/><rect x="49.5" y="7" width="3.4" height="3.4" rx="1" fill="#fff" fill-opacity="0.45"/><path d="M21 24L43 24L32 12Z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg><span>slxt share<span class="punkt">.</span></span></a>
+    <div class="rechts" id="kopf-rechts"><button class="rund" type="button" data-modus-schalter></button></div>
+  </header>
+  <main>
+    <section class="card" id="karte-tresor" hidden>
+      <h2>Tresor entsperren</h2>
+      <p class="sec klein">Um deine Dateinamen und Links zu sehen, braucht der Browser dein Passwort – es verlässt dein Gerät nicht.</p>
+      <form class="formular oben" id="f-tresor">
+        <label class="feld"><span>Passwort</span><input name="passwort" type="password" autocomplete="current-password" required></label>
+        <button class="btn primary" type="submit">Entsperren</button>
+      </form>
+    </section>
+
+    <section class="card" id="karte-hochladen" hidden>
+      <h2>Datei teilen</h2>
+      <label class="ablage" id="ablage">
+        <input type="file" id="datei" multiple>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+        <span><b>Dateien wählen</b> oder hierher ziehen</span>
+        <span class="sec klein">bis 10 MB je Datei · wird vor dem Hochladen verschlüsselt</span>
+      </label>
+      <fieldset class="oben ablauf-feld"><legend class="sec klein">Link gültig</legend>
+        <div class="umschalter" id="ablauf">
+          <label>1 Tag<input type="radio" name="ablauf" value="1"></label>
+          <label>7 Tage<input type="radio" name="ablauf" value="7" checked></label>
+          <label>30 Tage<input type="radio" name="ablauf" value="30"></label>
+          <label>Immer<input type="radio" name="ablauf" value="0"></label>
+        </div>
+      </fieldset>
+      <div class="fortschritt oben" id="upload-balken" hidden aria-hidden="true"><i></i></div>
+      <div class="status oben" id="status-upload" role="status" hidden></div>
+    </section>
+
+    <section class="card" id="karte-speicher" hidden>
+      <h2>Speicher</h2>
+      <div class="speicher">
+        <div class="zeile"><span id="speicher-text"></span><span class="sec" id="speicher-prozent"></span></div>
+        <div class="fortschritt" id="speicher-balken" aria-hidden="true"><i></i></div>
+      </div>
+      <details class="oben" id="mehr-speicher">
+        <summary class="btn">Mehr Speicher anfragen</summary>
+        <form class="formular oben" id="f-speicher">
+          <p class="sec klein">1 GB ist kostenlos. Für mehr Speicher melden wir uns per E-Mail bei dir.</p>
+          <label class="feld"><span>Wie viel zusätzlich? (GB)</span><input name="gb" type="number" min="1" max="100" value="5" required></label>
+          <label class="feld"><span>Nachricht (freiwillig)</span><textarea name="nachricht" maxlength="500"></textarea></label>
+          <button class="btn primary" type="submit">Anfrage senden</button>
+        </form>
+      </details>
+    </section>
+
+    <section class="card" id="karte-liste" hidden>
+      <h2>Meine Freigaben</h2>
+      <ul class="liste" id="liste"></ul>
+    </section>
+
+    <section class="card" id="karte-konto" hidden>
+      <h2>Konto</h2>
+      <p class="sec klein" id="konto-text"></p>
+      <details class="oben">
+        <summary class="btn">Passwort ändern</summary>
+        <form class="formular oben" id="f-passwort">
+          <label class="feld"><span>Altes Passwort</span><input name="alt" type="password" autocomplete="current-password" required></label>
+          <label class="feld"><span>Neues Passwort</span><input name="neu" type="password" autocomplete="new-password" required minlength="10"></label>
+          <button class="btn primary" type="submit">Ändern</button>
+        </form>
+      </details>
+      <details class="oben">
+        <summary class="btn gefahr">Konto löschen</summary>
+        <form class="formular oben" id="f-loeschen">
+          <p class="sec klein">Löscht dein Konto und <b>alle</b> Dateien sofort und endgültig. Geteilte Links funktionieren danach nicht mehr.</p>
+          <label class="feld"><span>Passwort zur Bestätigung</span><input name="passwort" type="password" autocomplete="current-password" required></label>
+          <button class="btn gefahr" type="submit">Konto endgültig löschen</button>
+        </form>
+      </details>
+      <div class="status oben" id="status-konto" role="status" hidden></div>
+    </section>
+  </main>
+
+  <dialog class="blatt" id="qr-dialog" aria-labelledby="qr-titel">
+    <h2 id="qr-titel">QR-Code</h2>
+    <canvas id="qr-canvas" aria-label="QR-Code zum Link"></canvas>
+    <p class="link-feld oben" id="qr-link"></p>
+    <div class="knoepfe oben">
+      <button class="btn primary" type="button" id="qr-kopieren">Link kopieren</button>
+      <button class="btn" type="button" id="qr-schliessen">Fertig</button>
+    </div>
+  </dialog>
+  <footer>
+    <p>Ende-zu-Ende verschlüsselt · der Server kann deine Dateien nicht lesen · ohne Werbung, ohne Tracking</p>
+    <nav class="recht" aria-label="Rechtliches"><a href="https://slxt.org/impressum/">Impressum</a><a href="https://slxt.org/datenschutz/#share">Datenschutz</a><a href="https://slxt.org/nutzungsbedingungen/#share">Nutzungsbedingungen</a></nav>
+  </footer>
+</body>
+</html>

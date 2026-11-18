@@ -1,0 +1,333 @@
+/* QR-Stream – Design von slxt.org / slxt.dev übernommen (Stand 18.11.2026):
+   Systemschrift (SF Pro auf Apple-Geräten), Himmel-Verlauf, Glaskarten, Pillen-Knöpfe, Akzent Violett,
+   Standard dunkel + Hell/Dunkel-Schalter. Keine externen Fonts, Icons oder Server. Alle Werte als Variablen hier. */
+:root {
+  /* Farben – hell („Abenddämmerung“) */
+  --sky1: #dfe5ff; --sky2: #efe3f8; --sky3: #fde7da;
+  --card: rgba(255, 255, 255, .74);
+  --card-line: rgba(30, 20, 60, .1);
+  --line: rgba(0, 0, 0, .08);
+  --text: #1d1d1f;
+  --sec: #54546a;
+  --tile: rgba(255, 255, 255, .7);
+  --tile-hover: #ffffff;
+  --accent: #5b3df5;
+  --on-accent: #ffffff;
+  --grad: linear-gradient(100deg, #6d4aff, #3b82f6);
+  --ok: #177a32;
+  --warn: #9a5b00;
+  --err: #c0262d;
+  --shadow: 0 30px 80px rgba(60, 40, 120, .18), 0 2px 6px rgba(60, 40, 120, .08);
+  --aurora-a: rgba(124, 92, 255, .22); --aurora-b: rgba(59, 130, 246, .18);
+  --meteor: 124, 92, 255;
+  --stars: 0;
+  /* Form */
+  --r-card: 28px;
+  --r-tile: 18px;
+  --r-pill: 999px;
+  --gap: 16px;
+  --spring: cubic-bezier(.3, 1.5, .4, 1);
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  /* Schrift */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --display: ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+:root[data-modus="dunkel"] {
+  color-scheme: dark;
+  --sky1: #04050d; --sky2: #0b0e2a; --sky3: #1a1240;
+  --card: rgba(20, 20, 38, .62);
+  --card-line: rgba(255, 255, 255, .1);
+  --line: rgba(255, 255, 255, .09);
+  --text: #f2f2f7;
+  --sec: #aeb0c8;
+  --tile: rgba(255, 255, 255, .06);
+  --tile-hover: rgba(255, 255, 255, .12);
+  --accent: #a993ff;
+  --on-accent: #0b0b10;
+  --grad: linear-gradient(100deg, #b9a6ff, #7cb4ff);
+  --ok: #3ddc6f;
+  --warn: #ffb547;
+  --err: #ff6b6b;
+  --shadow: 0 30px 90px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .04);
+  --aurora-a: rgba(124, 92, 255, .2); --aurora-b: rgba(59, 130, 246, .14);
+  --meteor: 190, 215, 255;
+  --stars: 1;
+}
+/* Ohne Schalter folgt die App dem System (Apple HIG › Dark Mode: kein App-eigener Zwang) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-modus="hell"]) {
+    color-scheme: dark;
+    --sky1: #04050d; --sky2: #0b0e2a; --sky3: #1a1240;
+    --card: rgba(20, 20, 38, .62);
+    --card-line: rgba(255, 255, 255, .1);
+    --line: rgba(255, 255, 255, .09);
+    --text: #f2f2f7;
+    --sec: #aeb0c8;
+    --tile: rgba(255, 255, 255, .06);
+    --tile-hover: rgba(255, 255, 255, .12);
+    --accent: #a993ff;
+    --on-accent: #0b0b10;
+    --grad: linear-gradient(100deg, #b9a6ff, #7cb4ff);
+    --ok: #3ddc6f;
+    --warn: #ffb547;
+    --err: #ff6b6b;
+    --shadow: 0 30px 90px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .04);
+    --aurora-a: rgba(124, 92, 255, .2); --aurora-b: rgba(59, 130, 246, .14);
+    --meteor: 190, 215, 255;
+    --stars: 1;
+  }
+}
+@media (prefers-contrast: more) { :root { --sec: var(--text); --card-line: currentColor; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  min-height: 100dvh; display: flex; flex-direction: column;
+  background: linear-gradient(180deg, var(--sky1), var(--sky2) 55%, var(--sky3)) fixed;
+  color: var(--text); font: 400 1.0625rem/1.5 var(--font);
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+a { color: var(--accent); text-decoration: none; }
+a, button, input, label { touch-action: manipulation; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 12px; }
+[hidden] { display: none !important; }
+
+/* Himmel: Polarlicht (nur die direkten <i> von .sky – NICHT die Sternschnuppen, die auch <i> sind) */
+.sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.sky > i { position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%; }
+.sky > i:nth-child(1) { left: -20vmax; top: -30vmax; background: radial-gradient(closest-side, var(--aurora-a), transparent); }
+.sky > i:nth-child(2) { right: -25vmax; top: 10vh; background: radial-gradient(closest-side, var(--aurora-b), transparent); }
+.sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: var(--stars); transition: opacity .8s ease; }
+/* Sternschnuppen wie auf slxt.org (nur transform/opacity → GPU) */
+.meteors { position: absolute; inset: 0; overflow: hidden; }
+.meteor {
+  position: absolute; top: 0; left: 0; height: 2px; border-radius: 2px; opacity: 0;
+  background: linear-gradient(90deg, rgba(var(--meteor), 0), rgba(var(--meteor), .4) 60%, rgba(255, 255, 255, .95));
+  transform-origin: 100% 50%; will-change: transform, opacity;
+}
+.meteor::after {
+  content: ""; position: absolute; right: -2px; top: 50%; width: 4px; height: 4px; margin-top: -2px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 6px 2px rgba(var(--meteor), .9), 0 0 16px 5px rgba(var(--meteor), .4);
+}
+/* Ruhe während Senden/Scannen: keine Bewegung, keine Unschärfe-Neuberechnung hinter dem QR-Code */
+.ruhe .meteors { display: none; }
+.ruhe .card, .ruhe .rund { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.ruhe .card { background: color-mix(in srgb, var(--card) 70%, var(--sky2)); }
+@media (prefers-reduced-transparency: reduce) { .sky > i { display: none; } }
+@media (prefers-reduced-motion: reduce) { .meteors { display: none; } }
+
+/* Hell/Dunkel: Kreisblende vom Schalter aus (Animation per JS auf ::view-transition-new(root)) */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { z-index: 2; }
+::view-transition-old(root) { z-index: 1; }
+/* teure Unschärfe während der 0,6 s ausschalten, damit nichts ruckelt */
+.modus-wechsel .card, .modus-wechsel .rund { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.modus-wechsel .sky canvas { transition: none; }
+[data-modus-schalter] svg { animation: dreh .5s var(--spring); }   /* Symbol dreht sich ein (wie slxt.org) */
+@keyframes dreh { from { opacity: 0; transform: rotate(-90deg) scale(.5); } }
+
+/* Kopfzeile */
+.bar {
+  position: relative; z-index: 2; display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px 6px; max-width: 720px; width: 100%; margin: 0 auto;
+}
+.marke { display: inline-flex; align-items: center; gap: 10px; color: var(--text); font: 700 1.125rem/1 var(--display); letter-spacing: -.02em; }
+.marke svg { width: 30px; height: 30px; }
+.marke .punkt { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.bar .rechts { margin-left: auto; display: flex; gap: 8px; }
+.rund {
+  width: 44px; height: 44px; border-radius: var(--r-pill); display: grid; place-items: center; cursor: pointer;
+  border: 1px solid var(--card-line); background: var(--card); color: var(--text);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: var(--shadow); transition: transform .15s ease, background .2s ease;
+}
+.rund:hover { background: var(--tile-hover); }
+.rund:active { transform: scale(.94); }
+.rund svg { width: 20px; height: 20px; }
+
+/* Inhalt */
+main { position: relative; z-index: 1; flex: 1; width: 100%; max-width: 720px; margin: 0 auto; padding: 8px 16px 24px; display: grid; gap: var(--gap); align-content: start;
+  grid-template-columns: minmax(0, 1fr); }   /* Inhalte dürfen das Raster nie breiter als den Bildschirm machen */
+.card {
+  padding: 22px; border-radius: var(--r-card);
+  background: var(--card); border: 1px solid var(--card-line); box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(160%); backdrop-filter: blur(24px) saturate(160%);
+}
+@media (prefers-reduced-transparency: reduce) { .card, .rund { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--sky2); } }
+@media (max-width: 420px) { .card { padding: 18px 16px; border-radius: 24px; } }
+h1 { margin: 6px 0 4px; font: 800 clamp(2rem, 8vw, 2.8rem)/1.05 var(--display); letter-spacing: -.03em; }
+h1 .punkt { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+h2 { margin: 0 0 10px; font: 600 .8125rem/1 var(--font); letter-spacing: .06em; text-transform: uppercase; color: var(--sec); }
+p { margin: 0; }
+.sec { color: var(--sec); }
+.klein { font-size: .875rem; }
+.mono { font-family: var(--mono); }
+
+/* Knöpfe (wie slxt.dev) */
+.btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px;
+  border: 0; border-radius: var(--r-pill); font: inherit; font-weight: 600; cursor: pointer;
+  color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent);
+  transition: transform .2s var(--spring), filter .15s ease, box-shadow .3s ease;
+}
+.btn:hover { filter: brightness(1.06); }
+.btn:active { transform: scale(.97); }
+.btn.primary { color: var(--on-accent); background: var(--accent); box-shadow: 0 6px 22px color-mix(in srgb, var(--accent) 35%, transparent); }
+.btn:disabled { cursor: not-allowed; filter: saturate(.6) opacity(.6); }
+.btn svg { width: 18px; height: 18px; }
+.knoepfe { display: flex; flex-wrap: wrap; gap: 10px; }
+.knoepfe .btn { flex: 1 1 160px; }
+
+/* Startseite: zwei große Kacheln */
+.kacheln { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.kachel {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 150px; padding: 18px;
+  border-radius: var(--r-tile); background: var(--tile); border: 1px solid var(--card-line); color: var(--text);
+  transition: transform .2s var(--spring), background .2s;
+}
+.kachel:hover { background: var(--tile-hover); transform: translateY(-3px); }
+.kachel:active { transform: scale(.97); }
+.kachel svg { width: 32px; height: 32px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.kachel .name { margin-top: auto; font: 700 1.25rem/1.2 var(--display); }
+.kachel .sub { font-size: .875rem; color: var(--sec); }
+@media (max-width: 380px) { .kacheln { grid-template-columns: 1fr; } }
+
+/* Datei-Ablage */
+.ablage {
+  display: grid; place-items: center; gap: 8px; min-height: 170px; padding: 20px; text-align: center; cursor: pointer;
+  border: 2px dashed color-mix(in srgb, var(--accent) 45%, transparent); border-radius: var(--r-tile); background: var(--tile);
+  transition: background .2s, border-color .2s;
+}
+.ablage.drueber { background: color-mix(in srgb, var(--accent) 14%, transparent); border-color: var(--accent); }
+.ablage svg { width: 36px; height: 36px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ablage input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+/* Regler */
+.regler { display: grid; gap: 14px; }
+.regler label { display: grid; gap: 6px; font-weight: 600; font-size: .9375rem; }
+.regler .wert { font-weight: 500; color: var(--sec); font-variant-numeric: tabular-nums; }
+.regler .kopf { display: flex; justify-content: space-between; }
+input[type="range"] { width: 100%; accent-color: var(--accent); height: 28px; margin: 0; }
+
+/* QR-Anzeige: immer weißer Grund (Kontrast für die Kamera), groß und quadratisch */
+.qr-buehne { display: grid; place-items: center; }
+.qr-buehne canvas {
+  width: min(100%, 72vh, 560px); aspect-ratio: 1; height: auto; background: #fff; border-radius: 20px;
+  image-rendering: pixelated; box-shadow: 0 10px 40px rgba(0, 0, 0, .25);
+}
+
+/* Kamera */
+.kamera { position: relative; overflow: hidden; border-radius: 22px; background: #000; aspect-ratio: 3 / 4; max-height: 62vh; width: 100%; }
+.kamera video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.kamera .rahmen { position: absolute; inset: 12%; border: 3px solid rgba(255, 255, 255, .8); border-radius: 18px; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .25); pointer-events: none; transition: border-color .15s; }
+.kamera .rahmen.treffer { border-color: var(--ok); }
+@media (min-width: 640px) { .kamera { aspect-ratio: 4 / 3; } }
+
+/* Fortschritt + Status */
+.fortschritt { height: 10px; border-radius: var(--r-pill); background: var(--tile); border: 1px solid var(--card-line); overflow: hidden; }
+.fortschritt i { display: block; height: 100%; width: 0; background: var(--grad); border-radius: inherit; transition: width .25s var(--ease-out); }
+.zahlen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.zahl { padding: 10px 12px; border-radius: 14px; background: var(--tile); border: 1px solid var(--card-line); }
+.zahl b { display: block; font: 700 1.125rem/1.2 var(--display); font-variant-numeric: tabular-nums; }
+.zahl span { font-size: .75rem; color: var(--sec); }
+.status { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--tile); border: 1px solid var(--card-line); font-size: .9375rem; }
+.status::before { content: ""; flex: none; width: 10px; height: 10px; margin-top: 7px; border-radius: 50%; background: var(--sec); }
+.status.ok::before { background: var(--ok); }
+.status.warn::before { background: var(--warn); }
+.status.err::before { background: var(--err); }
+.status.ok { border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+.status.warn { border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+.status.err { border-color: color-mix(in srgb, var(--err) 45%, transparent); }
+
+/* Schlüssel */
+.schluessel-code {
+  display: block; margin: 10px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--tile); border: 1px solid var(--card-line);
+  font: 600 1.0625rem/1.4 var(--mono); letter-spacing: .04em; text-align: center; word-break: break-all; user-select: all;
+}
+.code-eingabe { display: flex; gap: 8px; min-width: 0; }
+.code-eingabe .btn { flex: none; }
+.code-eingabe input {
+  flex: 1; min-width: 0; min-height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--card-line);
+  background: var(--tile); color: var(--text); font: 600 1rem/1 var(--mono); letter-spacing: .03em; text-transform: uppercase;
+}
+.datei-info { display: grid; gap: 2px; padding: 12px 14px; border-radius: 14px; background: var(--tile); border: 1px solid var(--card-line); word-break: break-word; }
+.datei-info b { font-weight: 600; }
+
+footer { position: relative; z-index: 1; text-align: center; padding: 8px 16px 18px; font-size: .8125rem; color: var(--sec); }
+footer p { margin: 0 0 8px; }
+/* Impressum/Datenschutz als kleine Pillen wie auf slxt.org; 44 px hohe Trefferfläche (Apple HIG) */
+footer .recht { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+footer .recht a { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 12px; border-radius: var(--r-pill);
+  border: 1px solid var(--card-line); background: var(--tile); color: var(--text); font-weight: 500; position: relative; }
+footer .recht a::after { content: ""; position: absolute; inset: -6px 0; }   /* Trefferfläche ≥ 44 px */
+footer .recht a:hover { background: var(--tile-hover); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+.oben { margin-top: 14px; }
+
+/* ======================= slxt share: Formulare, Umschalter, Liste, Dialog ======================= */
+.feld { display: grid; gap: 6px; }
+.feld span { font-weight: 600; font-size: .9375rem; }
+.feld input, .feld select, .feld textarea {
+  min-height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--card-line);
+  background: var(--tile); color: var(--text); font: inherit; width: 100%;
+}
+.feld textarea { min-height: 88px; padding: 12px 14px; resize: vertical; }
+.feld input:focus-visible, .feld select:focus-visible, .feld textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+.feld small { color: var(--sec); font-size: .8125rem; }
+.formular { display: grid; gap: 14px; }
+.code-feld { font: 600 1.5rem/1 var(--mono) !important; letter-spacing: .4em; text-align: center; }
+
+/* Umschalter (Segmented Control wie iOS) */
+.umschalter { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; border-radius: 14px;
+  background: var(--tile); border: 1px solid var(--card-line); }
+.umschalter button, .umschalter label { position: relative; min-height: 40px; border: 0; border-radius: 10px; background: none; color: var(--sec);
+  font: 600 .9375rem/1 var(--font); cursor: pointer; display: grid; place-items: center; }
+.umschalter input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.umschalter [aria-selected="true"], .umschalter label:has(input:checked) { background: var(--card); color: var(--text); box-shadow: 0 1px 4px rgba(0, 0, 0, .15); }
+.umschalter label:has(input:focus-visible) { outline: 3px solid var(--accent); }
+
+/* Speicher-Balken */
+.speicher { display: grid; gap: 8px; }
+.speicher .zeile { display: flex; justify-content: space-between; gap: 12px; font-size: .9375rem; }
+.fortschritt.voll i { background: linear-gradient(90deg, var(--warn), var(--err)); }
+
+/* Dateiliste */
+.liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.liste li { display: grid; gap: 10px; padding: 14px; border-radius: var(--r-tile); background: var(--tile); border: 1px solid var(--card-line); }
+.liste .kopf { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.liste .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.liste .info { color: var(--sec); font-size: .8125rem; }
+.liste .symbol { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.liste .symbol svg { width: 20px; height: 20px; }
+.liste .text { min-width: 0; display: grid; }
+.aktionen { display: flex; flex-wrap: wrap; gap: 8px; }
+.aktionen .btn { min-height: 44px; padding: 0 16px; font-size: .9375rem; flex: 1 1 auto; }
+.btn.gefahr { color: var(--err); background: color-mix(in srgb, var(--err) 12%, transparent); }
+.leer { text-align: center; color: var(--sec); padding: 18px 8px; }
+
+/* QR-Dialog */
+dialog.blatt { border: 1px solid var(--card-line); border-radius: var(--r-card); padding: 22px; max-width: min(420px, calc(100vw - 32px));
+  width: 100%; background: var(--sky2); color: var(--text); box-shadow: var(--shadow); }
+dialog.blatt::backdrop { background: rgba(4, 5, 13, .55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+dialog.blatt canvas { width: 100%; aspect-ratio: 1; height: auto; background: #fff; border-radius: 18px; image-rendering: pixelated; display: block; }
+dialog.blatt h2 { margin-bottom: 14px; }
+.link-feld { font: 500 .8125rem/1.4 var(--mono); word-break: break-all; padding: 10px 12px; border-radius: 12px; background: var(--tile);
+  border: 1px solid var(--card-line); user-select: all; }
+
+/* Startseite: zweispaltig ab Tablet */
+.hero { display: grid; gap: var(--gap); }
+@media (min-width: 860px) { main.breit { max-width: 1040px; } .hero { grid-template-columns: 1.1fr 1fr; align-items: start; } }
+.vorteile { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
+.vorteile li { display: flex; gap: 12px; align-items: flex-start; }
+.vorteile svg { flex: none; width: 22px; height: 22px; color: var(--accent); margin-top: 2px; }
+.admin-tabelle { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.admin-tabelle th, .admin-tabelle td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.admin-tabelle input { width: 80px; min-height: 36px; padding: 0 8px; border-radius: 10px; border: 1px solid var(--card-line); background: var(--tile); color: var(--text); }
+.scroll-x { overflow-x: auto; }
+.ablauf-feld { border: 0; padding: 0; margin: 14px 0 0; } .ablauf-feld legend { margin-bottom: 6px; padding: 0; }

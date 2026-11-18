@@ -1,0 +1,43 @@
+# slxt share – Dateien Ende-zu-Ende verschlüsselt teilen (share.slxt.dev). Keine Host-Ports, eigener Cloudflare-Tunnel.
+# Start: docker compose up -d --build   ·   Tests: docker build --target test -t share:test . && docker run --rm share:test
+name: share
+
+services:
+  app:
+    build: { context: ., target: laufzeit }
+    image: share:1.0.0
+    restart: unless-stopped
+    env_file: app.env                      # SMTP-Zugang, Geheimnis, Admin-Mail (0600, nicht im Repo; das Tunnel-Token steht getrennt in .env)
+    volumes:
+      - ./daten:/daten                     # SQLite + verschlüsselte Dateien (im nächtlichen Home-Backup)
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    networks: [intern]
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.11.1@sha256:e613aadbc2d9511785d2e67a86b0c8ac18dd63a3f9af0d06faf04cbfdcb35f2d
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "--loglevel", "info", "run"]
+    environment:
+      - TUNNEL_TOKEN          # nur aus .env
+    depends_on:
+      app:
+        condition: service_healthy
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    networks: [intern]
+
+networks:
+  intern:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.250.74.0/28           # fest: die Docker-Standardpools sind auf dem Server belegt

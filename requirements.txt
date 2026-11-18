@@ -1,0 +1,9 @@
+# Laufzeit – gleiche, auf aarch64 geprüfte Versionen wie ~/startseite (02.11.2026). Kein python-multipart:
+# Uploads kommen als roher Datenstrom (application/octet-stream).
+fastapi==0.162.0
+starlette==1.10.0
+pydantic==2.14.2
+pydantic_core==2.50.2
+uvicorn==0.54.0
+argon2-cffi==25.1.0
+argon2-cffi-bindings==26.1.0

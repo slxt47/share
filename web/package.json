@@ -1,0 +1,17 @@
+{
+  "name": "slxt-share-web",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "qrcode": "1.5.4"
+  },
+  "devDependencies": {
+    "vite": "8.3.8"
+  },
+  "author": "Florian Neubauer",
+  "scripts": {
+    "build": "node scripts/icons.mjs && vite build"
+  }
+}
