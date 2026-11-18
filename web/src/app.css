@@ -331,3 +331,4 @@ dialog.blatt h2 { margin-bottom: 14px; }
 .admin-tabelle input { width: 80px; min-height: 36px; padding: 0 8px; border-radius: 10px; border: 1px solid var(--card-line); background: var(--tile); color: var(--text); }
 .scroll-x { overflow-x: auto; }
 .ablauf-feld { border: 0; padding: 0; margin: 14px 0 0; } .ablauf-feld legend { margin-bottom: 6px; padding: 0; }
+body:has(main.breit) .bar { max-width: 1040px; }   /* Kopfzeile so breit wie die zweispaltige Startseite */
