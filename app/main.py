@@ -589,7 +589,7 @@ if TEST:
         return {'mails': [{'an': a, 'betreff': b, 'text': t, 'html': h_} for a, b, t, h_ in mail.POSTEINGANG_TEST]}
 
 
-@app.get('/api/gesund')
+@app.api_route('/api/gesund', methods=['GET', 'HEAD'])
 def gesund():
     db.verbindung().execute('SELECT 1')
     return {'ok': True}
@@ -628,13 +628,13 @@ def hintergrund():
 SEITEN = {'/': 'index.html', '/app': 'app.html', '/admin': 'admin.html'}
 
 
-@app.get('/d/{i}')
+@app.api_route('/d/{i}', methods=['GET', 'HEAD'])
 def download_seite(i: str):
     return FileResponse(os.path.join(WEB, 'd.html'), media_type='text/html')
 
 
 for pfad, datei in SEITEN.items():
-    app.add_api_route(pfad, (lambda d=datei: FileResponse(os.path.join(WEB, d), media_type='text/html')), methods=['GET'])
+    app.add_api_route(pfad, (lambda d=datei: FileResponse(os.path.join(WEB, d), media_type='text/html')), methods=['GET', 'HEAD'])
 
 if os.path.isdir(WEB):
     app.mount('/', StaticFiles(directory=WEB, html=False), name='web')

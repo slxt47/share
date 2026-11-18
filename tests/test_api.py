@@ -166,6 +166,13 @@ def test_kein_unbegrenzter_ablauf():
     assert f['ablauf'] is not None and f['ablauf'] - f['erstellt'] == 30 * 86400
 
 
+def test_head_auf_seiten():
+    # Statusprüfungen (Dashboard, Monitoring) fragen mit HEAD – das darf kein 404 sein
+    c = neu_client()
+    for pfad in ('/', '/app', '/admin', '/d/AAAAAAAAAAAAAAAAAAAAAA', '/api/gesund'):
+        assert c.head(pfad).status_code == 200, pfad
+
+
 def test_csrf_ohne_header_abgelehnt():
     c = TestClient(main.app)
     assert c.post('/api/anmelden', json={}).status_code == 403
