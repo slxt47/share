@@ -54,7 +54,6 @@ async function bereit() {
 
 // ---------------------------------------------------------------- Liste
 const ablaufText = (t) => {
-  if (!t) return 'läuft nicht ab';
   const tage = Math.ceil((t * 1000 - Date.now()) / 864e5);
   return tage <= 1 ? 'läuft heute/morgen ab' : `noch ${tage} Tage`;
 };

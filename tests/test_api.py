@@ -27,7 +27,7 @@ def frisch():
 
 
 def code_fuer(email):
-    for an, _, text in reversed(mail.POSTEINGANG_TEST):
+    for an, _, text, _h in reversed(mail.POSTEINGANG_TEST):
         if an == email:
             return re.search(r'\b(\d{6})\b', text).group(1)
     raise AssertionError('keine Mail')
@@ -36,7 +36,7 @@ def code_fuer(email):
 def warte_mail(email):
     import time
     for _ in range(50):
-        if any(a == email for a, _, _ in mail.POSTEINGANG_TEST):
+        if any(m[0] == email for m in mail.POSTEINGANG_TEST):
             return code_fuer(email)
         time.sleep(0.02)
     raise AssertionError('keine Mail angekommen')
@@ -146,6 +146,24 @@ def test_abgelaufene_freigabe_ist_weg():
     assert c.get(f'/api/teilen/{i}').status_code == 404
     main.aufraeumen()
     assert not os.path.exists(main.datei_pfad(i))
+
+
+def test_mail_hat_html_im_slxt_design():
+    c = neu_client('13.13.13.13')
+    konto(c)
+    an, betreff, text, h_ = mail.POSTEINGANG_TEST[-1]
+    code = re.search(r'\b(\d{6})\b', text).group(1)
+    assert code in betreff and 'cid:logo' in h_ and '#a993ff' in h_ and 'prefers-color-scheme' in h_
+    assert 'http' not in re.sub(r'href="https://(share\.slxt\.dev|slxt\.org)[^"]*"', '', h_)   # nichts wird nachgeladen
+
+
+def test_kein_unbegrenzter_ablauf():
+    c = neu_client('12.12.12.12')
+    konto(c)
+    assert hochladen(c, 100, ablauf='0').status_code == 400        # „für immer“ gibt es nicht
+    i = hochladen(c, 100, ablauf='30').json()['id']
+    f = next(d for d in c.get('/api/dateien').json()['dateien'] if d['id'] == i)
+    assert f['ablauf'] is not None and f['ablauf'] - f['erstellt'] == 30 * 86400
 
 
 def test_csrf_ohne_header_abgelehnt():

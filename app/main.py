@@ -28,7 +28,7 @@ MAX_GEHEIMTEXT = MAX_DATEI + 12 + 16         # + IV + GCM-Tag
 KONTINGENT = 1024 ** 3                       # 1 GB je Konto (Geheimtext-Bytes)
 SITZUNG_S = 14 * 86400
 CODE_S = 600
-ABLAUF_TAGE = {'1': 1, '7': 7, '30': 30, '0': None}
+ABLAUF_TAGE = {'1': 1, '7': 7, '30': 30}       # „für immer“ gibt es bewusst nicht (18.11.2026)
 TEST = os.environ.get('SHARE_TEST') == '1'
 COOKIE = os.environ.get('SHARE_COOKIE', '__Host-share')
 COOKIE_SECURE = os.environ.get('SHARE_COOKIE_SECURE', '1') == '1'
@@ -426,18 +426,17 @@ async def speicher_anfragen(req: Request):
     text = re.sub(r'[\x00-\x08\x0b-\x1f]', ' ', str(d.get('nachricht', '')))[:500]
     db.verbindung().execute('UPDATE benutzer SET letzte_anfrage = ? WHERE id = ?', (jetzt(), b['id']))
     if ADMIN_MAIL:
-        threading.Thread(target=lambda: _senden_sicher(
-            ADMIN_MAIL, f'slxt share: {b["name"]} möchte +{gb} GB',
-            f'Benutzer: {b["name"]}\nE-Mail: {b["email"]}\nBelegt: {belegt(b["id"]) / 1024 ** 3:.2f} GB von '
-            f'{b["kontingent"] / 1024 ** 3:.2f} GB\nGewünscht: +{gb} GB\n\nNachricht:\n{text or "–"}\n\n'
-            'Freigeben: https://share.slxt.dev/admin'), daemon=True).start()
+        zeilen = [f'Benutzer: {b["name"]} ({b["email"]})',
+                  f'Belegt: {belegt(b["id"]) / 1024 ** 3:.2f} GB von {b["kontingent"] / 1024 ** 3:.2f} GB',
+                  f'Gewünscht: +{gb} GB']
+        threading.Thread(target=_anfrage_sicher, args=(ADMIN_MAIL, f'slxt share: {b["name"]} möchte +{gb} GB', zeilen, text), daemon=True).start()
     db.protokollieren(f'Speicher angefragt: +{gb} GB', b['id'])
     return {'ok': True}
 
 
-def _senden_sicher(an, betreff, text):
+def _anfrage_sicher(an, betreff, zeilen, nachricht):
     try:
-        mail.senden(an, betreff, text)
+        mail.anfrage_mail(an, betreff, zeilen, nachricht)
     except Exception as e:   # noqa: BLE001
         print(f'mail-fehler {type(e).__name__}', flush=True)
 
@@ -587,7 +586,7 @@ def admin_datei_loeschen(i: str, req: Request):
 if TEST:
     @app.get('/api/test/posteingang')
     def test_posteingang():
-        return {'mails': [{'an': a, 'betreff': b, 'text': t} for a, b, t in mail.POSTEINGANG_TEST]}
+        return {'mails': [{'an': a, 'betreff': b, 'text': t, 'html': h_} for a, b, t, h_ in mail.POSTEINGANG_TEST]}
 
 
 @app.get('/api/gesund')

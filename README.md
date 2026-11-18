@@ -5,7 +5,7 @@ Dateien **Ende-zu-Ende verschlüsselt** teilen – per Link oder QR-Code. Live: 
 - Hochladen im Browser, Empfänger öffnen den Link oder scannen den QR-Code – **ohne Konto**.
 - Der Browser verschlüsselt Datei **und Dateiname** (AES-256-GCM) vor dem Hochladen. Der Schlüssel steht nur im Link hinter dem `#` – diesen Teil schicken Browser nie an einen Server. Der Server (und sein Betreiber) kann nichts lesen.
 - Konten: Benutzername + Passwort + **Code per E-Mail bei jeder Anmeldung** (2FA). Das Passwort verlässt das Gerät nicht.
-- **10 MB je Datei, 1 GB kostenlos je Konto**; mehr Speicher auf Anfrage (Admin gibt frei). Freigaben laufen nach 1, 7, 30 Tagen ab – oder nie.
+- **10 MB je Datei, 1 GB kostenlos je Konto**; mehr Speicher auf Anfrage (Admin gibt frei). Freigaben laufen nach 1, 7 oder 30 Tagen ab und werden dann gelöscht.
 - Design wie [slxt.org](https://slxt.org) / [QR-Stream](https://github.com/slxt47/qr-stream): Himmel mit Sternschnuppen, folgt hell/dunkel des Geräts.
 
 ## Wie die Verschlüsselung funktioniert
